@@ -3,14 +3,26 @@ const fabricjs: typeof fabric =
 
 import { PSBrushIface } from "./PSBrush";
 import PSPoint from "./PSPoint";
-import { getPressure, FabricPointerEvent } from "./utils";
+import {
+  getPressure,
+  FabricPointerEvent,
+  FabricPointer,
+  getDirection
+} from "./utils";
 
 export interface PressureManagerIface {
   min: number;
   magic: number;
   fallback: number;
   onMouseDown(ev: FabricPointerEvent): number;
-  onMouseMove(ev: FabricPointerEvent, points: PSPoint[]): number;
+  onMouseMove(
+    pointer: FabricPointer,
+    ev: FabricPointerEvent,
+    points: PSPoint[]
+  ): {
+    pressure: number;
+    direction: number;
+  };
   onMouseUp(): void;
 }
 
@@ -25,9 +37,13 @@ class PressureManager implements PressureManagerIface {
     return pressure === this.magic ? this.min : pressure;
   }
 
-  onMouseMove(ev: FabricPointerEvent, points: PSPoint[]) {
-    const pressure = getPressure(ev, this.fallback),
-      pressureShouldBeIgnored =
+  onMouseMove(
+    pointer: FabricPointer,
+    ev: FabricPointerEvent,
+    points: PSPoint[]
+  ) {
+    const pressure = getPressure(ev, this.fallback, points);
+    const pressureShouldBeIgnored =
         this.brush.pressureIgnoranceOnStart >
         Date.now() - this.brush.currentStartTime,
       hasPreviousPressureValues = Array.isArray(points) && points.length > 0,
@@ -52,7 +68,14 @@ class PressureManager implements PressureManagerIface {
       );
       this.brush["_redrawSegments"](points);
     }
-    return updatedPressure;
+    const direction = getDirection(pointer, points[points.length - 1]);
+    if (points.length === 2) {
+      points[0].direction = points[1].direction;
+    }
+    return {
+      pressure: updatedPressure,
+      direction
+    };
   }
   onMouseUp() {
     // do nothing

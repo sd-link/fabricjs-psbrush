@@ -3,7 +3,7 @@ const fabricjs: typeof fabric =
   typeof fabric === "undefined" ? require("fabric").fabric : fabric;
 
 import PSPoint from "./PSPoint";
-
+import { getPressurePath } from "./utils";
 export interface PSStrokeIface extends fabric.Object {
   type: "PSStroke";
   startTime?: number;
@@ -151,29 +151,11 @@ const PSStrokeImpl = <any>fabricjs.util.createClass(
       ctx.lineCap = this.strokeLineCap;
       ctx.lineJoin = this.strokeLineJoin;
 
-      for (i = 1, len = this.strokePoints.length; i < len; i++) {
-        ctx.beginPath();
-        ctx.moveTo(
-          mid.x - multSignX * strokeWidth + l,
-          mid.y - multSignY * strokeWidth + t
-        );
-        ctx.lineWidth = p1.pressure * this.strokeWidth;
-        // we pick the point between pi + 1 & pi + 2 as the
-        // end point and p1 as our control point.
-        mid = p1.midPointFrom(p2);
-        ctx.quadraticCurveTo(
-          p1.x - multSignX * strokeWidth + l,
-          p1.y - multSignY * strokeWidth + t,
-          mid.x - multSignX * strokeWidth + l,
-          mid.y - multSignY * strokeWidth + t
-        );
-        p1 = this.strokePoints[i];
-        p2 = this.strokePoints[i + 1];
-
-        ctx.stroke();
-      }
-
-      // ctx.restore();
+      const path = getPressurePath(this.strokePoints, this.strokeWidth, {
+        x: l,
+        y: t
+      });
+      ctx.fill(path);
     },
 
     /**

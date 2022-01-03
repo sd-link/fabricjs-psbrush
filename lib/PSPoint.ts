@@ -5,9 +5,13 @@ const fabricjs: typeof fabric =
 class PSPoint extends fabricjs.Point {
   type = "PSPoint";
   pressure: number;
-  constructor(x: number, y: number, pressure: number) {
+  time: number;
+  direction?: number;
+  constructor(x: number, y: number, pressure: number, direction?: number) {
     super(x, y);
     this.pressure = pressure;
+    this.time = Date.now();
+    this.direction = direction;
   }
   midPointFrom(p: PSPoint) {
     const mid = super.midPointFrom(p);

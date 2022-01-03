@@ -13,6 +13,7 @@ import { FabricEvent, FabricPointer, FabricPointerEvent } from "./utils";
 import PressureManager, { PressureManagerIface } from "./PressureManager";
 import PSStroke, { PSStrokeIface } from "./PSStroke";
 import PSPoint from "./PSPoint";
+import { getPressurePath } from "./utils";
 
 export interface PSBrushIface extends fabric.BaseBrush {
   pressureManager: PressureManagerIface;
@@ -93,22 +94,15 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
         this._render();
       } else {
         const points = this._points,
-          length = points.length,
           ctx = this.canvas.contextTop;
 
         // draw the curve update
         this._saveAndTransform(ctx);
-        if (this.oldEnd) {
-          ctx.beginPath();
-          ctx.moveTo(this.oldEnd.x, this.oldEnd.y);
-        }
-        this.oldEnd = this._drawSegment(
-          ctx,
-          points[length - 2],
-          points[length - 1],
-          true
-        );
-        ctx.stroke();
+        const path = getPressurePath(points, this.width, {
+          x: 0,
+          y: 0
+        });
+        ctx.fill(path);
         ctx.restore();
       }
     }
@@ -176,8 +170,12 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
     pointer: FabricPointer,
     ev: FabricPointerEvent
   ) {
-    const pressure = this.pressureManager.onMouseMove(ev, this._points);
-    const pointerPoint = new PSPoint(pointer.x, pointer.y, pressure);
+    const { pressure, direction } = this.pressureManager.onMouseMove(
+      pointer,
+      ev,
+      this._points
+    );
+    const pointerPoint = new PSPoint(pointer.x, pointer.y, pressure, direction);
     return this._addPoint(pointerPoint);
   },
 
