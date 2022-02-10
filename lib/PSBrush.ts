@@ -21,6 +21,7 @@ export interface PSBrushIface extends fabric.BaseBrush {
   simplifyTolerance: number;
   simplifyHighestQuality: boolean;
   pressureIgnoranceOnStart: number;
+  isPressureBrush: boolean,
   opacity: number;
   readonly currentStartTime: number;
   onMouseDown(pointer: FabricPointer | FabricEvent, ev: FabricEvent): void;
@@ -33,6 +34,7 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
   pressureManager: null,
   pressureCoeff: 100,
   simplifyTolerance: 0,
+  isPressureBrush: false,
   simplifyHighestQuality: false,
   pressureIgnoranceOnStart: -1,
   opacity: 1,
@@ -98,10 +100,15 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
 
         // draw the curve update
         this._saveAndTransform(ctx);
-        const path = getPressurePath(points, this.width, {
-          x: 0,
-          y: 0
-        });
+        const path = getPressurePath(
+          points,
+          this.width, {
+            x: 0,
+            y: 0,
+          },
+          this.isPressureBrush,
+        );
+        ctx.fillStyle = this.color;
         ctx.fill(path);
         ctx.restore();
       }
@@ -312,7 +319,8 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
       strokeLineCap: this.strokeLineCap,
       strokeMiterLimit: this.strokeMiterLimit,
       strokeLineJoin: this.strokeLineJoin,
-      strokeDashArray: this.strokeDashArray
+      strokeDashArray: this.strokeDashArray,
+      isPressureBrush: this.isPressureBrush,
     });
 
     var position = new fabricjs.Point(
@@ -372,6 +380,7 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
     path.opacity = this.opacity;
     path["startTime"] = this.currentStartTime;
     path["endTime"] = Date.now();
+    path.fill = this.color;
     this.canvas.clearContext(this.canvas.contextTop);
     this.canvas.add(path);
     // this.canvas.renderAll();

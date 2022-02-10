@@ -8,6 +8,7 @@ export interface PSStrokeIface extends fabric.Object {
   type: "PSStroke";
   startTime?: number;
   endTime?: number;
+  isPressureBrush: boolean;
   strokePoints: PSPoint[];
 }
 
@@ -47,6 +48,8 @@ const PSStrokeImpl = <any>fabricjs.util.createClass(
      */
     endTime: null,
 
+    isPressureBrush: false,
+
     cacheProperties: fabricjs.Object.prototype.cacheProperties.concat(
       "strokePoints",
       "startTime",
@@ -73,6 +76,7 @@ const PSStrokeImpl = <any>fabricjs.util.createClass(
       this.startTime = options.startTime;
       this.endTime = options.endTime;
       this.strokePoints = (strokePoints || []).concat();
+      this.isPressureBrush = options.isPressureBrush;
       this._setPositionDimensions(options);
     },
 
@@ -154,7 +158,7 @@ const PSStrokeImpl = <any>fabricjs.util.createClass(
       const path = getPressurePath(this.strokePoints, this.strokeWidth, {
         x: l,
         y: t
-      });
+      }, this.isPressureBrush);
       ctx.fill(path);
     },
 

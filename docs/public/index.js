@@ -9,6 +9,7 @@ function initialize(el) {
   // Initialize a brush
   let brush = new fabric.PSBrush(canvas);
   brush.width = 10;
-  brush.color = "#000";
+  brush.color = "#ff0000";
+  brush.isPressureBrush = true;
   canvas.freeDrawingBrush = brush;
 }

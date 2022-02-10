@@ -112,7 +112,8 @@ export function getPointByDirectionAndRadius(
 export function getPressurePath(
   points: PSPoint[],
   strokeWidth: number,
-  offset: FabricPointer
+  offset: FabricPointer,
+  isPressureBrush: boolean,
 ) {
   const path = new Path2D();
 
@@ -121,17 +122,18 @@ export function getPressurePath(
 
   for (let i = 0; i < leng; i++) {
     const { x, y, direction, pressure } = points[i];
+    const pressureForRendering = isPressureBrush ? pressure : 1;
     const pX = x + offset.x;
     const pY = y + offset.y;
 
     const p0 = getPointByDirectionAndRadius(
       direction + Math.PI / 2,
-      (pressure * strokeWidth) / 2,
+      (pressureForRendering * strokeWidth) / 2,
       { x: pX, y: pY }
     );
     const p1 = getPointByDirectionAndRadius(
       direction - Math.PI / 2,
-      (pressure * strokeWidth) / 2,
+      (pressureForRendering * strokeWidth) / 2,
       { x: pX, y: pY }
     );
     pathPoints.push(p0.x, p0.y);
