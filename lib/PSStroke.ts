@@ -151,9 +151,10 @@ const PSStrokeImpl = <any>fabricjs.util.createClass(
         mid.x = p1.x;
       }
 
-      ctx.strokeStyle = this.stroke;
-      ctx.lineCap = this.strokeLineCap;
-      ctx.lineJoin = this.strokeLineJoin;
+      // ctx.strokeStyle = this.stroke;
+      ctx.fillStyle = this.fill;
+      // ctx.lineCap = this.strokeLineCap;
+      // ctx.lineJoin = this.strokeLineJoin;
 
       const path = getPressurePath(this.strokePoints, this.strokeWidth, {
         x: l,
