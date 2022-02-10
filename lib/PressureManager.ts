@@ -57,21 +57,22 @@ class PressureManager implements PressureManagerIface {
       ? lastPressure
       : Math.max(this.min, pressure);
 
-    if (
-      !pressureShouldBeIgnored &&
-      hasPreviousPressureValues &&
-      lastPressure === this.min &&
-      updatedPressure !== this.min
-    ) {
-      points.forEach(
-        (p: PSPoint) => (p.pressure = Math.max(p.pressure, updatedPressure))
-      );
-      this.brush["_redrawSegments"](points);
-    }
+    // if (
+    //   !pressureShouldBeIgnored &&
+    //   hasPreviousPressureValues &&
+    //   lastPressure === this.min &&
+    //   updatedPressure !== this.min
+    // ) {
+    //   points.forEach(
+    //     (p: PSPoint) => (p.pressure = Math.max(p.pressure, updatedPressure))
+    //   );
+    //   this.brush["_redrawSegments"](points);
+    // }
     const direction = getDirection(pointer, points[points.length - 1]);
     if (points.length === 2) {
       points[0].direction = points[1].direction;
     }
+
     return {
       pressure: updatedPressure,
       direction

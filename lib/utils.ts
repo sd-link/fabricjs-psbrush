@@ -3,7 +3,7 @@ import PSPoint from "./PSPoint";
 import { PSStrokeIface } from "./PSStroke";
 
 const MAX_SPEED = 1.5;
-const MAX_PRESSURE_SEG = 0.2;
+const MAX_PRESSURE_SEG = 0.5;
 const MIN_DISTANCE = 0.00001;
 
 export type FabricPointerEvent = TouchEvent | MouseEvent | PointerEvent;
@@ -26,6 +26,27 @@ export function isPSStroke(
 
 export function isPSPoint(object: any): object is PSPoint {
   return object && object["type"] === "PSPoint";
+}
+
+export function smooth(arr, windowSize) {
+  const result = [];
+
+  for (let i = 0; i < arr.length; i += 1) {
+    const leftOffset = i - windowSize;
+    const from = leftOffset >= 0 ? leftOffset : 0;
+    const to = i + windowSize + 1;
+
+    let count = 0;
+    let sum = 0;
+    for (let j = from; j < to && j < arr.length; j += 1) {
+      sum += arr[j];
+      count += 1;
+    }
+
+    result[i] = sum / count;
+  }
+
+  return result;
 }
 
 export function getPressure(
@@ -110,19 +131,52 @@ export function getPointByDirectionAndRadius(
 }
 
 export function getPressurePath(
-  points: PSPoint[],
+  rawPoints: PSPoint[],
   strokeWidth: number,
   offset: FabricPointer,
-  isPressureBrush: boolean,
+  isPressureBrush: boolean
 ) {
   const path = new Path2D();
 
   const pathPoints: number[] = [];
+  const minDistance = strokeWidth / 6;
+
+  const points: PSPoint[] = [rawPoints[0]];
+  for (let i = 1; i < rawPoints.length; i++) {
+    const d = getDistance(points[points.length - 1], rawPoints[i]);
+    if (d < minDistance) continue;
+
+    points.push(rawPoints[i]);
+  }
+
+  for (let i = 1; i < points.length; i++) {
+    const speed = Math.min(
+      0.9,
+      getSpeed(points[i - 1], points[i]) / minDistance
+    );
+    const pressure = Math.min(0.9 - speed, 0.9) + 0.1;
+    points[i].pressure = pressure;
+  }
+  points[0].pressure = points[1] ? points[1].pressure : 0;
+
+  const pressures = smooth(
+    points.map(e => e.pressure),
+    2
+  );
+
+  console.log(pressures[pressures.length - 1]);
+
   const leng = points.length;
 
   for (let i = 0; i < leng; i++) {
-    const { x, y, direction, pressure } = points[i];
-    const pressureForRendering = isPressureBrush ? pressure : 1;
+    const { x, y } = points[i];
+
+    const direction =
+      i == 0
+        ? getDirection(points[i], points[i + 1])
+        : getDirection(points[i - 1], points[i]);
+
+    const pressureForRendering = isPressureBrush ? pressures[i] : 1;
     const pX = x + offset.x;
     const pY = y + offset.y;
 

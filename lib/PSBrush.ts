@@ -110,6 +110,8 @@ const PSBrushImpl = <any>fabricjs.util.createClass(fabricjs.BaseBrush, {
         );
         ctx.fillStyle = this.color;
         ctx.fill(path);
+        // ctx.lineWidth = 1;
+        // ctx.stroke(path);
         ctx.restore();
       }
     }
